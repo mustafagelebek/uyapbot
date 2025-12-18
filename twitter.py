@@ -48,6 +48,4 @@ def siteyi_tara():
         tweet_at(mesaj)
 
 if __name__ == "__main__":
-    while True:
-        siteyi_tara()
-        time.sleep(KONTROL_ARALIGI)
+    siteyi_tara()
