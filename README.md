@@ -1,4 +1,4 @@
-UYAP System Status Monitor Bot
+🤖UYAP System Status Monitor Bot
 This bot automatically monitors the accessibility of the UYAP Lawyer Portal (Beta) and sends a notification via X (Twitter) if a downtime is detected.
 
 🚀 Features
@@ -22,8 +22,6 @@ ACCESS_TOKEN_SECRET: Your X Access Token Secret
 
 2. Local Installation
 If you want to test the bot on your local machine:
-
-Bash
 
 pip install -r requirements.txt
 python twitter.py

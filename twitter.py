@@ -2,6 +2,7 @@ import requests
 import tweepy
 import time
 import urllib3
+import os
 urllib3.disable_warnings(urllib3.exceptions.NotOpenSSLWarning)
 
 # --- AYARLAR ---
@@ -9,10 +10,10 @@ HEDEF_URL = "https://avukatbeta.uyap.gov.tr/"
 KONTROL_ARALIGI = 300 
 
 # Twitter API 
-API_KEY = "yqWIV3O77GAt5W30E1KiUBEvV"
-API_SECRET = "lQFpJztzTw2kgykY5x6LFbg5MyO3wZMyhAj0CQ5HmpOoe3CxeB"
-ACCESS_TOKEN = "2001654927182180353-OeZ8GsupD4AlHBlmKIelR4S9w2Zk9b"
-ACCESS_SECRET = "HNXElQo81JbMT3wh04goQtxAmkWssexh0ceNc5HA30lgz"
+API_KEY = os.getenv("API_KEY")
+API_SECRET = os.getenv("API_SECRET")
+ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
+ACCESS_SECRET = os.getenv("ACCESS_TOKEN_SECRET")
 
 # Twitter Bağlantısı
 def tweet_at(mesaj):
