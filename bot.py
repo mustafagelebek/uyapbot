@@ -5,7 +5,7 @@ import urllib3
 import os
 from datetime import datetime
 
-urllib3.disable_warnings(urllib3.exceptions.NotOpenSSLWarning)
+urllib3.disable_warnings()
 
 HEDEF_URL = "https://avukatbeta.uyap.gov.tr/"
 KONTROL_ARALIGI = 60       # Kaç saniyede bir kontrol (1 dakika)
@@ -17,6 +17,9 @@ API_SECRET          = os.getenv("API_SECRET")
 ACCESS_TOKEN        = os.getenv("ACCESS_TOKEN")
 ACCESS_TOKEN_SECRET = os.getenv("ACCESS_TOKEN_SECRET")
 
+GORSEL_DOWN = "down.png"  # Site çöktüğünde
+GORSEL_UP   = "up.png"
+
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
 }
@@ -25,18 +28,27 @@ HEADERS = {
 son_tweet_zamani = 0
 site_onceki_durumu = True  
 
-def tweet_at(mesaj):
+def tweet_at(mesaj: str, gorsel_yolu: str):
     try:
+        # v1.1 API — medya yüklemek için
+        auth = tweepy.OAuth1UserHandler(API_KEY, API_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
+        api_v1 = tweepy.API(auth)
+        media = api_v1.media_upload(filename=gorsel_yolu)
+        media_id = media.media_id_string
+
+        # v2 API — tweet atmak için
         client = tweepy.Client(
             consumer_key=API_KEY,
             consumer_secret=API_SECRET,
             access_token=ACCESS_TOKEN,
             access_token_secret=ACCESS_TOKEN_SECRET
         )
-        client.create_tweet(text=mesaj)
-        print("✅ Tweet atıldı!")
+        client.create_tweet(text=mesaj, media_ids=[media_id])
+        print("✅ Tweet (fotoğraflı) atıldı!")
+
     except Exception as e:
         print(f"❌ Tweet atılamadı: {e}")
+
 
 def zaman():
     return datetime.now().strftime("%H:%M:%S")
@@ -55,7 +67,7 @@ def siteyi_tara():
             # Site tekrar açıldıysa bildir
             if not site_onceki_durumu:
                 mesaj = f"✅ ÇÖZÜLDÜ: {HEDEF_URL} tekrar erişilebilir durumda! #UYAP #SistemAktif"
-                tweet_at(mesaj)
+                tweet_at(mesaj,GORSEL_UP)
                 son_tweet_zamani = simdi
 
             site_onceki_durumu = True
@@ -65,7 +77,7 @@ def siteyi_tara():
             site_onceki_durumu = False
             if tweet_gonderlebilir:
                 mesaj = f"❓ UYARI: {HEDEF_URL} bulunamıyor! (Kod: 404) #UYAP #SistemDown"
-                tweet_at(mesaj)
+                tweet_at(mesaj,GORSEL_DOWN)
                 son_tweet_zamani = simdi
 
         else:
@@ -73,7 +85,7 @@ def siteyi_tara():
             site_onceki_durumu = False
             if tweet_gonderlebilir:
                 mesaj = f"⚠️ UYARI: {HEDEF_URL} sorunlu! Durum Kodu: {cevap.status_code} #UYAP #SistemDown"
-                tweet_at(mesaj)
+                tweet_at(mesaj,GORSEL_DOWN)
                 son_tweet_zamani = simdi
 
     except requests.exceptions.Timeout:
@@ -81,7 +93,7 @@ def siteyi_tara():
         site_onceki_durumu = False
         if tweet_gonderlebilir:
             mesaj = f"⏱️ UYARI: {HEDEF_URL} zaman aşımına uğradı! #UYAP #SistemDown"
-            tweet_at(mesaj)
+            tweet_at(mesaj,GORSEL_DOWN)
             son_tweet_zamani = simdi
 
     except requests.exceptions.ConnectionError:
@@ -89,7 +101,7 @@ def siteyi_tara():
         site_onceki_durumu = False
         if tweet_gonderlebilir:
             mesaj = f"❌ ACİL: {HEDEF_URL} çökmüş olabilir! Bağlantı kurulamıyor. #UYAP #Çöktü"
-            tweet_at(mesaj)
+            tweet_at(mesaj,GORSEL_DOWN)
             son_tweet_zamani = simdi
 
     except Exception as e:
